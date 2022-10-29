@@ -1,6 +1,6 @@
 local actions = require'telescope.actions'
-local actions_set = require'telescope.actions.set'
-local actions_state = require'telescope.actions.state'
+local action_set = require'telescope.actions.set'
+local action_state = require'telescope.actions.state'
 local conf = require'telescope.config'.values
 local entry_display = require'telescope.pickers.entry_display'
 local finders = require'telescope.finders'
@@ -78,25 +78,12 @@ M.list = function(opts)
     },
     sorter = conf.file_sorter(opts),
     previewer = previewers.cat.new(opts),
+    mappings = opts.mappings,
     attach_mappings = function(prompt_bufnr)
-      actions_set.select:replace(function(_, type)
-        local entry = actions_state.get_selected_entry()
+      action_set.select:replace(function(_, type)
+        local entry = action_state.get_selected_entry()
         local dir = from_entry.path(entry)
-        if type == 'default' then
-          require'telescope.builtin'.find_files{cwd = dir, hidden = true}
-          return
-        end
-        actions.close(prompt_bufnr)
-        if type == 'horizontal' then
-          vim.cmd('cd '..dir)
-          print('chdir to '..dir)
-        elseif type == 'vertical' then
-          vim.cmd('lcd '..dir)
-          print('lchdir to '..dir)
-        elseif type == 'tab' then
-          vim.cmd('tcd '..dir)
-          print('tchdir to '..dir)
-        end
+        action_set.edit(prompt_bufnr, action_state.select_key_to_edit_key(type))
       end)
       return true
     end,
